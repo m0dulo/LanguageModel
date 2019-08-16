@@ -1,5 +1,5 @@
-#ifndef LANGUAGE_MODEL_SRC_EXAMPLE_H_
-#define LANGUAGE_MODEL_SRC_EXAMPLE_H_
+#ifndef BASIC_EXAMPLE_H_
+#define BASIC_EXAMPLE_H_
 
 #include <iostream>
 #include <vector>
@@ -21,4 +21,4 @@ public:
     Feature m_feature_;
     std::vector<int> m_label_;
 }
-#endif // LANGUAGE_MODEL_SRC_EXAMPLE_H_
+#endif // BASIC_EXAMPLE_H_

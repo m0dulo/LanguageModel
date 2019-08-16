@@ -7,10 +7,9 @@
 struct GraphBuilder {
     DynamicLSTMBuilder encoder;
     std::vector<Node *> lookup_nodes;
-    std::vector<Node *> word_nodes;
 
     void forward(Graph &graph, ModelParams &mode_params, HyperParams &hyper_params,
-            const Feature &feature, bool is_trainning) {
+            const Feature &feature, bool is_trainning, std::vector<Node *> &word_nodes) {
 
         BucketNode *hidden_bucket(new BucketNode);
         hidden_bucket -> init(hyper_params.hidden_size);
@@ -20,7 +19,7 @@ struct GraphBuilder {
             LookupNode *lookup_node(new LookupNode);
             lookup_node -> init(hyper_params.word_dim);
             lookup_node -> setParam(model_params.lookup_table);
-            lookip_node -> forward(graph, word);
+            lookup_node -> forward(graph, word);
             
             DropoutNode *dropout_node(new DropoutNode(hyper_params.drop_prob, is_trainning));
             dropout_node -> init(hyper_params.word_dim);
@@ -38,15 +37,15 @@ struct GraphBuilder {
             UniNode *uni_node(new UniNode);
             uni_node -> init(hyper_params.word_dim);
             uni_node -> setParam(*model_params.linear);
+            uni_node -> forward(graph, *node);
 
             LinearWordVectorNode *word_node(new LinearWordVectorNode);
             word_node -> init(model_params.lookup_table.nVSize);
             word_node -> setParam(model_params.lookup_table.E);
-            word_node -> forward(graph, *word_node);
+            word_node -> forward(graph, *uni_node);
 
             word_nodes.push_back(word_node);
         }
-
     }
 };
 
