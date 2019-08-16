@@ -1,0 +1,6 @@
+[submodule "3rd/N3LDG-plus"]
+	path = 3rd/N3LDG-plus
+	url = https://github.com/chncwang/N3LDG-plus.git
+[submodule "3rd/eigen-git-mirror"]
+	path = 3rd/eigen-git-mirror
+	url = https://github.com/eigenteam/eigen-git-mirror.git
