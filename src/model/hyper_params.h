@@ -12,7 +12,7 @@ public:
     int batch_size;
 
     dtype nn_regular;
-    dtype ada_alaph;
+    dtype ada_alpha;
     dtype ada_eps;
 
     int hidden_size;
@@ -32,7 +32,7 @@ public:
 
     void setParams(Options &op) {
         nn_regular = op.regParameter;
-        ada_alaph = op.adaAlpha;
+        ada_alpha = op.adaAlpha;
         ada_eps = op.adaEps;
         hidden_size = op.hiddenSize;
         word_context = op.wordcontext;

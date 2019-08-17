@@ -15,7 +15,7 @@ struct GraphBuilder {
         hidden_bucket -> init(hyper_params.hidden_size);
         hidden_bucket -> forward(graph);
 
-        for (const string &word : feature.sentence) {
+        for (const std::string &word : feature.sentence) {
             LookupNode *lookup_node(new LookupNode);
             lookup_node -> init(hyper_params.word_dim);
             lookup_node -> setParam(model_params.lookup_table);

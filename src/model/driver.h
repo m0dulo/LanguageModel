@@ -2,6 +2,7 @@
 #define LANGUAGE_MODEL_SRC_DRIVER_H_
 
 #include <iostream>
+#include "example.h"
 #include "compution_graph.h"
 
 class Driver {
@@ -20,21 +21,32 @@ public:
             std::cout << "model parameter initialization Error, Please check!" << std::endl;
 			return;
         }
-        model_params_.exportModelParams(_ada);
+        model_params_.exportModelParams(ada_);
         setUpdateParameters(hyper_params_.nn_regular, hyper_params_.ada_alpha, hyper_params_.ada_eps);
     }
 
     dtype train(Graph &graph, const std::vector<Example> &examples, int iter) {
         dtype cost = 0.0;
-        int example_num = examples.size();
-        std::vector<Node *> &word_nodes
-        for (int count = 0; cout < example_num; count++) {
-            const Example &example = examples.at(count);
+        std::vector<Node *> word_nodes {nullptr};
+        word_nodes.clear();
+        for (auto example : examples){
             GraphBuilder builder;
-            builder.forward(graph, model_params_, hyper_params_, example.m_feature, true, word_nodes);
-            
+            builder.forward(graph, model_params_, hyper_params_, example.m_feature_, true, word_nodes);
         }
+        graph.compute();
+        for (auto example : examples) {
+            example.m_words_id_.clear();
+            std::pair<dtype, std::vector<int>> loss= MaxLogProbabilityLoss(word_nodes, example.m_words_id_, examples.size());
+            cost += loss.first;
+        }
+        graph.backward();
+        return cost;
     }
+
+    dtype accuracy()
+
+
     
-}
+};
+
 #endif // LANGUAGE_MODEL_SRC_DRIVER_H_

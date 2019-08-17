@@ -19,6 +19,6 @@ public:
 class Example {
 public:
     Feature m_feature_;
-    std::vector<int> m_label_;
-}
+    std::vector<int> m_words_id_;
+};
 #endif // BASIC_EXAMPLE_H_
