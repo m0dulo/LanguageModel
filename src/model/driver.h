@@ -2,6 +2,7 @@
 #define LANGUAGE_MODEL_SRC_DRIVER_H_
 
 #include <iostream>
+#include <math.h>
 #include "example.h"
 #include "compution_graph.h"
 
@@ -40,7 +41,7 @@ public:
             cost += loss.first;
         }
         graph.backward();
-        return cost;
+        return exp(cost);
     }
 
     dtype accuracy()
