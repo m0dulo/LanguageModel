@@ -28,16 +28,17 @@ public:
 
     dtype train(Graph &graph, const std::vector<Example> &examples, int iter) {
         dtype cost = 0.0;
-        std::vector<Node *> word_nodes {nullptr};
-        word_nodes.clear();
+        std::vector<std::vector<Node *>> batch_word_nodes;
         for (auto example : examples){
+            std::vector<Node *> word_nodes {nullptr};
+            word_nodes.clear();
             GraphBuilder builder;
             builder.forward(graph, model_params_, hyper_params_, example.m_feature_, true, word_nodes);
+            batch_word_nodes.push_back(word_nodes);
         }
         graph.compute();
-        for (auto example : examples) {
-            example.m_words_id_.clear();
-            std::pair<dtype, std::vector<int>> loss= MaxLogProbabilityLoss(word_nodes, example.m_words_id_, examples.size());
+        for (int i = 0; i < examples.size(); i++) {
+            std::pair<dtype, std::vector<int>> loss= MaxLogProbabilityLoss(batch_word_nodes.at(i), examples.at(i).m_words_id_, examples.size());
             cost += loss.first;
         }
         graph.backward();
