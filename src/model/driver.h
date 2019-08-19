@@ -51,11 +51,31 @@ public:
         builder.forward(graph, model_params_, hyper_params_, feature, true, word_nodes);
         graph.compute();
         std::pair<dtype, std::vector<int>> loss = MaxLogProbabilityLoss(word_nodes, feature.m_words_id_, 1);
-        dtype perplexity = loss.first;
+        dtype perplexity = exp(loss.first);
+        return perplexity;
     }
 
+    void updateModel() {
+        ada_.updateAdam(10);
+    }
 
-    
+    void checkgrad(const std::vector<Example> &examples, int iter) {
+        ostringstream out;
+        out << "Interation: " << iter;
+        //TODO
+    }
+
+private:
+    void resetEval() {
+        eval_.reset();
+    }
+
+    void setUpdateParameters(dtype nnRegular, dtype adaAlpha, dtype adaEps) {
+        ada_._alpha = adaAlpha;
+        ada_._eps = adaEps;
+        ada_._reg = nnRegular;
+    }
+
 };
 
 #endif // LANGUAGE_MODEL_SRC_DRIVER_H_
