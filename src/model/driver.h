@@ -30,7 +30,7 @@ public:
         dtype cost = 0.0;
         std::vector<std::vector<Node *>> batch_word_nodes;
         for (auto example : examples){
-            std::vector<Node *> word_nodes {nullptr};
+            std::vector<Node *> word_nodes;
             word_nodes.clear();
             GraphBuilder builder;
             builder.forward(graph, model_params_, hyper_params_, example.m_feature_, true, word_nodes);
@@ -38,14 +38,21 @@ public:
         }
         graph.compute();
         for (int i = 0; i < examples.size(); i++) {
-            std::pair<dtype, std::vector<int>> loss= MaxLogProbabilityLoss(batch_word_nodes.at(i), examples.at(i).m_words_id_, examples.size());
+            std::pair<dtype, std::vector<int>> loss = MaxLogProbabilityLoss(batch_word_nodes.at(i), examples.at(i).m_words_id_, examples.size());
             cost += loss.first;
         }
         graph.backward();
         return exp(cost);
     }
 
-    dtype accuracy()
+    dtype predict(Graph &graph, const Feature &feature) {
+        std::vector<Node *> word_nodes;
+        GraphBuilder builder;
+        builder.forward(graph, model_params_, hyper_params_, feature, true, word_nodes);
+        graph.compute();
+        std::pair<dtype, std::vector<int>> loss = MaxLogProbabilityLoss(word_nodes, feature.m_words_id_, 1);
+        dtype perplexity = loss.first;
+    }
 
 
     
