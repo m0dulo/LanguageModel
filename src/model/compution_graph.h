@@ -8,14 +8,14 @@ struct GraphBuilder {
     DynamicLSTMBuilder encoder;
     std::vector<Node *> lookup_nodes;
 
-    void forward(Graph &graph, ModelParams &mode_params, HyperParams &hyper_params,
-            const Feature &feature, bool is_trainning, std::vector<Node *> &word_nodes) {
+    void forward(Graph &graph, ModelParams &model_params, HyperParams &hyper_params,
+            const Instance &instance, bool is_trainning, std::vector<Node *> &word_nodes) {
 
         BucketNode *hidden_bucket(new BucketNode);
         hidden_bucket -> init(hyper_params.hidden_size);
         hidden_bucket -> forward(graph);
 
-        for (const std::string &word : feature.sentence) {
+        for (const std::string &word : instance.m_words_) {
             LookupNode *lookup_node(new LookupNode);
             lookup_node -> init(hyper_params.word_dim);
             lookup_node -> setParam(model_params.lookup_table);
@@ -36,7 +36,7 @@ struct GraphBuilder {
         for (Node *node : encoder._hiddens) {
             UniNode *uni_node(new UniNode);
             uni_node -> init(hyper_params.word_dim);
-            uni_node -> setParam(*model_params.linear);
+            uni_node -> setParam(model_params.linear);
             uni_node -> forward(graph, *node);
 
             LinearWordVectorNode *word_node(new LinearWordVectorNode);

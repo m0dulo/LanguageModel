@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <math.h>
-#include "example.h"
+#include "instance.h"
 #include "compution_graph.h"
 
 class Driver {
@@ -26,31 +26,32 @@ public:
         setUpdateParameters(hyper_params_.nn_regular, hyper_params_.ada_alpha, hyper_params_.ada_eps);
     }
 
-    dtype train(Graph &graph, const std::vector<Example> &examples, int iter) {
+    dtype train(Graph &graph, const std::vector<Instance> &instances, int iter) {
         dtype cost = 0.0;
         std::vector<std::vector<Node *>> batch_word_nodes;
-        for (auto example : examples){
+        for (auto instance : instances){
             std::vector<Node *> word_nodes;
             word_nodes.clear();
             GraphBuilder builder;
-            builder.forward(graph, model_params_, hyper_params_, example.m_feature_, true, word_nodes);
+            builder.forward(graph, model_params_, hyper_params_, instance, true, word_nodes);
             batch_word_nodes.push_back(word_nodes);
         }
         graph.compute();
-        for (int i = 0; i < examples.size(); i++) {
-            std::pair<dtype, std::vector<int>> loss = MaxLogProbabilityLoss(batch_word_nodes.at(i), examples.at(i).m_words_id_, examples.size());
+        for (int i = 0; i < instances.size(); i++) {
+            std::pair<dtype, std::vector<int>> loss = MaxLogProbabilityLoss(batch_word_nodes.at(i), instances.at(i).m_words_id_, instances.size());
             cost += loss.first;
         }
         graph.backward();
-        return exp(cost);
+        dtype perplexity = exp(cost);
+        return perplexity;
     }
 
-    dtype predict(Graph &graph, const Feature &feature) {
+    dtype predict(Graph &graph, const Instance &instance) {
         std::vector<Node *> word_nodes;
         GraphBuilder builder;
-        builder.forward(graph, model_params_, hyper_params_, feature, true, word_nodes);
+        builder.forward(graph, model_params_, hyper_params_, instance, true, word_nodes);
         graph.compute();
-        std::pair<dtype, std::vector<int>> loss = MaxLogProbabilityLoss(word_nodes, feature.m_words_id_, 1);
+        std::pair<dtype, std::vector<int>> loss = MaxLogProbabilityLoss(word_nodes, instance.m_words_id_, 1);
         dtype perplexity = exp(loss.first);
         return perplexity;
     }
@@ -59,7 +60,7 @@ public:
         ada_.updateAdam(10);
     }
 
-    void checkgrad(const std::vector<Example> &examples, int iter) {
+    void checkgrad(const std::vector<Instance> &insatnces, int iter) {
         ostringstream out;
         out << "Interation: " << iter;
         //TODO
