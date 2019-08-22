@@ -9,13 +9,13 @@ struct GraphBuilder {
     std::vector<Node *> lookup_nodes;
 
     void forward(Graph &graph, ModelParams &model_params, HyperParams &hyper_params,
-            const Instance &instance, bool is_trainning, std::vector<Node *> &word_nodes) {
+            const Feature &feature, bool is_trainning, std::vector<Node *> &word_nodes) {
 
         BucketNode *hidden_bucket(new BucketNode);
         hidden_bucket -> init(hyper_params.hidden_size);
         hidden_bucket -> forward(graph);
 
-        for (const std::string &word : instance.m_words_) {
+        for (const std::string &word : feature.m_words_) {
             LookupNode *lookup_node(new LookupNode);
             lookup_node -> init(hyper_params.word_dim);
             lookup_node -> setParam(model_params.lookup_table);

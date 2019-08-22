@@ -3,6 +3,7 @@
 
 #include "N3LDG.h"
 #include "options.h"
+#include "example.h"
 
 struct HyperParams {
 private:
