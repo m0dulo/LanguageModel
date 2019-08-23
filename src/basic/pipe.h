@@ -21,7 +21,7 @@ public:
   Pipe() {
     m_jstReader = new InstanceReader();
     m_jstWriter = new InstanceWriter();
-	max_sentense_size = 256;
+	  max_sentense_size = 256;
   }
 
   ~Pipe(void) {
