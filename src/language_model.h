@@ -11,12 +11,12 @@
 using namespace nr;
 using namespace std;
 
-class Classifier {
+class LanguageModel {
 
 
   public:
     unordered_map<string, int> m_word_stats;
-    unordered_map<string, int> m_feat_stats;
+    // unordered_map<string, int> m_feat_stats;
 
   public:
     Options m_options_;
@@ -27,8 +27,8 @@ class Classifier {
 
 
   public:
-    Classifier(int memsize);
-    virtual ~Classifier();
+    LanguageModel(int memsize);
+    virtual ~LanguageModel() = default;
 
   public:
 
