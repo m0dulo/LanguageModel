@@ -21,7 +21,8 @@ int LanguageModel::createAlphabet(const std::vector<Instance> &vecInsts) {
         const Instance *pInstance = &vecInsts.at(instance_num);
         const std::vector<std::string> &words = pInstance -> m_words_;
         const std::vector<std::string> &sparse_feats = pInstance -> m_sparse_feats_;
-        const std::vector<int> &word_ids = pInstance -> m_words_id_；
+        const std::vector<int> &word_ids = pInstance -> m_words_id_;
+                
 
 
     }
