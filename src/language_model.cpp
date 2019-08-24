@@ -75,5 +75,44 @@ void LanguageModel::extractFeature(Feature &feat, const Instance *pInstance) {
     feat.clear = pInstance -> m_sparse_feats_;
 }
 
+void LanguagModel::convert2Example(const Instance *pInstance, Example &exam) {
+    exam.clear();
+    Feature feat;
+    extractFeature(feat, pInstance);
+    exam.m_feature_ = feat;
+}
+
+void LanguageModel::initExamples(const vector<Instance> &vecInsts, vector<Example> &vecExams) {
+    int numIntsance;    
+    for (numInstance = 0; numInstance < vecInsts.size(); numIntsance++) {
+        const Instance *pInstance = &vecInsts.at(numIntsance);
+        Example curExam;
+        convert2Example(pInstance, curExam);
+        vecExams.push_back(curExam);
+
+        if ((numInstance + 1) % m_options.verboseIter == 0) {
+			cout << numInstance + 1 << " ";
+			if ((numInstance + 1) % (40 * m_options.verboseIter) == 0)
+				cout << std::endl;
+			cout.flush();
+		}
+		if (m_options.maxInstance > 0 && numInstance == m_options.maxInstance)
+			break;
+	}
+	    cout << numInstance << " " << endl;
+}
+    
+void LanguageModel::train(const string &trainFile, const string &devFile, const String &optionFile) {
+    if (optionFile != "")
+        m_options_.load(optionFile);
+    m_options_.showOptions();
+    vector<Instance> trainInsts;
+    vector<Instance> devInsts;
+    m_pipe_.readInstances(trainFile, trainInsts, m_options_.maxInstance);
+    if (devFile != "")
+        m_pipe_.readInstances(devFile, devInsts, m_options_.maxInstance);
+    
+}
+
 
 
