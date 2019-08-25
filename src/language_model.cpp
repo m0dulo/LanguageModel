@@ -111,7 +111,37 @@ void LanguageModel::train(const string &trainFile, const string &devFile, const 
     m_pipe_.readInstances(trainFile, trainInsts, m_options_.maxInstance);
     if (devFile != "")
         m_pipe_.readInstances(devFile, devInsts, m_options_.maxInstance);
+    createAlphabet(trainInsts);
+    addTestAlpha(devInsts);
+    m_word_stats[unknownkey] = m_options_.wordCutOff + 1;
     
+    m_driver_.model_params_.word_alpha.init(m_word_stats, m_options_.wordCutOff);
+    for (auto &instance : trainInsts) {
+        vector<int> ids;
+        ids.push_back(m_driver_.model_params_.word_alpha.from_string(instance));
+        instance.m_words_id_ = ids;
+    }
+
+    for (auto &instance : devInsts) {
+        vector<int> ids;
+        ids.push_back(m_driver_.model_params_.word_alpha.from_string(instance));
+        instance.m_words_id_ = ids;
+    }
+
+    if (m_options_.wordFile != "") {
+        m_driver_.model_params_.lookup_table.init(m_driver_.model_params_.word_alpha, m_options_.wordFile, m_options_.wordEmbFineTune);
+    } else {
+        m_driver_.model_params_.lookup_table.init(m_driver_.model_params_.word_alpha, m_options_.wordEmbSize, m_options_.wordEmbFineTune);
+    }
+    vector<Example> trainExams;
+    vector<Example> devExams;
+    initExamples(trainInsts, trainExams);
+    initExamples(devInsts, devExams);
+
+   
+
+    m_driver_.hyper_params_.setParams(m_options_);
+    m_driver_.init();
 }
 
 
