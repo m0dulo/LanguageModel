@@ -1,6 +1,7 @@
 #include "language_model.h"
 #include "Arguement_helper.h"
 #include <chrono>
+#include <algorithm>
 
 LanguageModel::LanguageModel() {
     //TODO
@@ -72,11 +73,12 @@ int LanguageModel::addTestAlpha(const vector<Instance> &vecInsts) {
 void LanguageModel::extractFeature(Feature &feat, const Instance *pInstance) {
     feat.clear();
     feat.m_words_ = pInstance -> m_words_;
-    feat.clear = pInstance -> m_sparse_feats_;
+    // feat.m_sparse_feats = pInstance -> m_sparse_feats_;
 }
 
 void LanguagModel::convert2Example(const Instance *pInstance, Example &exam) {
     exam.clear();
+    exam.m_words_id_ = pInstance -> m_words_id_;
     Feature feat;
     extractFeature(feat, pInstance);
     exam.m_feature_ = feat;
@@ -106,23 +108,23 @@ void LanguageModel::train(const string &trainFile, const string &devFile, const 
     if (optionFile != "")
         m_options_.load(optionFile);
     m_options_.showOptions();
-    vector<Instance> trainInsts;
-    vector<Instance> devInsts;
-    m_pipe_.readInstances(trainFile, trainInsts, m_options_.maxInstance);
+    vector<Instance> train_instances;
+    vector<Instance> dev_instances;
+    m_pipe_.readInstances(trainFile, train_instances, m_options_.maxInstance);
     if (devFile != "")
-        m_pipe_.readInstances(devFile, devInsts, m_options_.maxInstance);
-    createAlphabet(trainInsts);
-    addTestAlpha(devInsts);
+        m_pipe_.readInstances(devFile, dev_instannces, m_options_.maxInstance);
+    createAlphabet(train_instances);
+    addTestAlpha(dev_instances);
     m_word_stats[unknownkey] = m_options_.wordCutOff + 1;
-    
+
     m_driver_.model_params_.word_alpha.init(m_word_stats, m_options_.wordCutOff);
-    for (auto &instance : trainInsts) {
+    for (auto &instance : train_insatnces) {
         vector<int> ids;
         ids.push_back(m_driver_.model_params_.word_alpha.from_string(instance));
         instance.m_words_id_ = ids;
     }
 
-    for (auto &instance : devInsts) {
+    for (auto &instance : dev_instances) {
         vector<int> ids;
         ids.push_back(m_driver_.model_params_.word_alpha.from_string(instance));
         instance.m_words_id_ = ids;
@@ -133,15 +135,59 @@ void LanguageModel::train(const string &trainFile, const string &devFile, const 
     } else {
         m_driver_.model_params_.lookup_table.init(m_driver_.model_params_.word_alpha, m_options_.wordEmbSize, m_options_.wordEmbFineTune);
     }
-    vector<Example> trainExams;
-    vector<Example> devExams;
-    initExamples(trainInsts, trainExams);
-    initExamples(devInsts, devExams);
-
-   
+    vector<Example> train_examples;
+    vector<Example> dev_examples;
+    initExamples(train_instances, train_examples);
+    initExamples(dev_instances, dev_examples);
 
     m_driver_.hyper_params_.setParams(m_options_);
     m_driver_.init();
+
+    int input_size = train_examples.size();
+
+    int batch_block = input_size / m_options_.batchSize;
+    if (input_size % m_options_.batchSize != 0)
+        batch_block++;
+    
+    vector<int> indexes;
+    for (int i =0; i < input_size; i++) 
+        indexes.push_back(i);
+
+    static vector<Example> sub_examples;
+    
+    int dev_nums = dev_examples.size();
+
+    for (int iter = 0; iter < m_options_.maxIter; ++iter) {
+        cout << "###### Epcho " << iter << endl;
+
+        random_shuffle(indexes.begin(), indexes.end());
+
+        auto time_start = chrono::high_resolution_clock::now();
+
+        for (int updateIter = 0; updateIter < batch_block; updateIter++) {  
+            Graph graph;
+            sub_examples.clear();
+            int start_pos = updateIter * m_options_.batchSize;
+            int end_pos = (updateIter + 1) * m_options_.batchSize;
+            if (end_pos > input_size)
+                end_pos = input_size;
+            
+            for (int idy = start_pos; idy < end_pos; idy++) {
+                sub_examples.push_back(train_examples.at(indexes[idy]));
+            }
+
+            int curUpdateIter = iter * batch_block + updateIter;
+
+            auto train_result = m_driver_.train(graph, sub_examples, curUpdateIter);
+
+            if ((curUpdateIter + 1) % m_options_.verboseIter == 0) {
+                cout << "current: " << updateIter + 1 << ", total block: " << batch_block << endl;
+                cout << "loss = " << std::get<0>(train_result)
+                     << "accuracy = " << std::get<1>(train_result)
+                     << "perplexity = " << std::get<2>(train_result) << endl;
+            } 
+        }
+    }
 }
 
 
